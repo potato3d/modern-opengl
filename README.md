@@ -3,6 +3,8 @@ Modern OpenGL 4.5 rendering techniques
 
 Demonstrates several OpenGL concepts using modern API: direct state access (DSA), frame buffer objects (FBO), shader storage buffer objects (SSBO), texture sampler objects (TSO), uniform buffer objects (UBO), geometry instancing, indirect drawing, bindless textures, multidrawelementsindirect, compute shaders, CPU/GPU synchronization with fences, approaching zero driver overhead (AZDO), etc.
 
+The code was meant to be used as a hands-on training material. The teacher directory contains the full implementation, while the student directory has // TODO comments where new code must be inserted to complete each example scene.
+
 # Description
 
 * Scene 0: framebuffer and textures
