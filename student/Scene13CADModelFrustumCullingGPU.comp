@@ -1,0 +1,56 @@
+// --------------------------------------------------------------------------------------------------------------
+// GLOBAL
+// --------------------------------------------------------------------------------------------------------------
+
+//scene13: declare block size
+
+// --------------------------------------------------------------------------------------------------------------
+// INPUTS
+// --------------------------------------------------------------------------------------------------------------
+
+//scene13: scene size uniform
+
+//scene13: frustum ssbo
+
+//scene13: input draw commands ssbo
+
+//scene13: drawable bounds
+
+// --------------------------------------------------------------------------------------------------------------
+// OUTPUTS
+// --------------------------------------------------------------------------------------------------------------
+
+//scene13: atomic counter
+
+//scene13: output visible draw commands ssbo
+
+//-------------------------------------------------------------------------------------------------
+// AUX FUNCTIONS
+//-------------------------------------------------------------------------------------------------
+
+bool isCulled(in const Plane p, in const BoundsData b)
+{
+    return dot(vec3(p.nx, p.ny, p.nz), vec3(b.minmax[p.px].x, b.minmax[p.py].y, b.minmax[p.pz].z)) < -p.offset;
+}
+
+//-------------------------------------------------------------------------------------------------
+// MAIN
+//-------------------------------------------------------------------------------------------------
+
+void main()
+{
+    uint drawID = gl_GlobalInvocationID.x;
+
+    //scene13:
+    // skip computation for extra invocations
+
+    // determine if geometry should be drawn
+    //scene13: get bounds using draw id
+
+    // frustum culling
+    //scene13: call isCulled for each plane
+
+    // get draw command and write to correct location in output (no collision thanks to atomic counter)
+    //scene13: increment atomic counter
+    //scene13: store draw command in output
+}

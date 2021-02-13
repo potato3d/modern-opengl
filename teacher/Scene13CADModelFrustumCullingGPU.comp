@@ -1,0 +1,79 @@
+// --------------------------------------------------------------------------------------------------------------
+// GLOBAL
+// --------------------------------------------------------------------------------------------------------------
+
+layout(local_size_x = CS_BLOCK_SIZE_X) in;
+
+// --------------------------------------------------------------------------------------------------------------
+// INPUTS
+// --------------------------------------------------------------------------------------------------------------
+
+layout(location = U_SCENE_SIZE) uniform uint u_SceneSize;
+
+layout(std430, binding = SB_FRUSTUM) buffer Frustum
+{
+    readonly FrustumData data;
+} sb_Frustum;
+
+layout(std430, binding = SB_IN_DRAW_CMD) buffer InDrawCmd
+{
+    readonly DrawCommand data[];
+} sb_InDrawCmd;
+
+layout(std430, binding = SB_BOUNDS) buffer Bounds
+{
+    readonly BoundsData data[];
+} sb_Bounds;
+
+// --------------------------------------------------------------------------------------------------------------
+// OUTPUTS
+// --------------------------------------------------------------------------------------------------------------
+
+layout(binding = AC_DRAW_COUNT) uniform atomic_uint ac_DrawCount;
+
+layout(std430, binding = SB_OUT_DRAW_CMD) buffer OutDrawCmd
+{
+    writeonly DrawCommand data[];
+} sb_OutDrawCmd;
+
+//-------------------------------------------------------------------------------------------------
+// AUX FUNCTIONS
+//-------------------------------------------------------------------------------------------------
+
+bool isCulled(in const Plane p, in const BoundsData b)
+{
+    return dot(vec3(p.nx, p.ny, p.nz), vec3(b.minmax[p.px].x, b.minmax[p.py].y, b.minmax[p.pz].z)) < -p.offset;
+}
+
+//-------------------------------------------------------------------------------------------------
+// MAIN
+//-------------------------------------------------------------------------------------------------
+
+void main()
+{
+    uint drawID = gl_GlobalInvocationID.x;
+
+    // skip computation for extra invocations
+    if(drawID >= u_SceneSize)
+    {
+        return;
+    }
+
+    // determine if geometry should be drawn
+    const BoundsData bounds = sb_Bounds.data[drawID];
+
+    // frustum culling
+    if(isCulled(sb_Frustum.data.near, bounds) ||
+       isCulled(sb_Frustum.data.left, bounds) ||
+       isCulled(sb_Frustum.data.right, bounds) ||
+       isCulled(sb_Frustum.data.bottom, bounds) ||
+       isCulled(sb_Frustum.data.top, bounds) ||
+       isCulled(sb_Frustum.data.far, bounds))
+    {
+        return;
+    }
+
+    // get draw command and write to correct location in output (no collision thanks to atomic counter)
+    uint count = atomicCounterIncrement(ac_DrawCount);
+    sb_OutDrawCmd.data[count] = sb_InDrawCmd.data[drawID];
+}
